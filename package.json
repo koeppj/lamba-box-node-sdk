@@ -1,0 +1,19 @@
+{
+  "name": "lambda-box-node-sdk",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "AWS Lambda Node 20 ESM shell for Box folder listing with box-node-sdk v10 JWT auth",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "sam build",
+    "invoke:local": "sam local invoke GetBoxFilesFunction -e events/get-box-files.json",
+    "start:api": "sam local start-api",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "box-node-sdk": "^10"
+  }
+}

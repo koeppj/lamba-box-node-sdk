@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Node 20 ESM Lambda for Box get folder items using box-node-sdk v10 JWT
+
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    MemorySize: 256
+    Timeout: 30
+    Architectures:
+      - x86_64
+
+Resources:
+  GetBoxFilesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: get-box-files
+      CodeUri: .
+      Handler: src/get-box-files.handler
+      Events:
+        GetBoxFilesApi:
+          Type: Api
+          Properties:
+            Path: /box/folders/{folderId}/items
+            Method: get
+      Environment:
+        Variables:
+          BOX_CONFIG_FILE: ''
+          BOX_FOLDER_ID: '0'
+          BOX_JWT_CONFIG_JSON: ''
+          BOX_JWT_CONFIG_JSON_BASE64: ''
+          BOX_CLIENT_ID: ''
+          BOX_CLIENT_SECRET: ''
+          BOX_JWT_KEY_ID: ''
+          BOX_PRIVATE_KEY: ''
+          BOX_PRIVATE_KEY_PASSPHRASE: ''
+          BOX_ENTERPRISE_ID: ''
+          BOX_USER_ID: ''
+          BOX_AS_USER_ID: ''
+
+Outputs:
+  GetBoxFilesApiUrl:
+    Description: API endpoint
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/box/folders/{folderId}/items'
