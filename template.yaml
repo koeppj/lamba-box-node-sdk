@@ -1,10 +1,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Node 20 ESM Lambda for Box get folder items using box-node-sdk v10 JWT
+Description: Node 22 ESM Lambda for Box get folder items using box-node-sdk v10 JWT
 
 Globals:
   Function:
-    Runtime: nodejs20.x
+    Runtime: nodejs22.x
     MemorySize: 256
     Timeout: 30
     Architectures:

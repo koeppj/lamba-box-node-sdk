@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "AWS Lambda Node 20 ESM shell for Box folder listing with box-node-sdk v10 JWT auth",
+  "description": "AWS Lambda Node 22 ESM shell for Box folder listing with box-node-sdk v10 JWT auth",
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "scripts": {
     "build": "sam build",
