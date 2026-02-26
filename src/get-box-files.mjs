@@ -1,8 +1,11 @@
 import { BoxClient } from 'box-node-sdk';
 import { BoxJwtAuth, JwtConfig } from 'box-node-sdk/box';
+import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager';
 import { readFileSync } from 'node:fs';
 
 let cachedClient;
+let cachedJwtConfig;
+const secretsClient = new SecretsManagerClient({});
 
 function requiredEnv(name) {
   const value = process.env[name];
@@ -26,7 +29,27 @@ function parseOptionalInt(value, fallback) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
-function buildJwtConfig() {
+async function loadJwtConfigFromSecret() {
+  const secretId = process.env.BOX_JWT_SECRET_ARN;
+  if (!secretId) return undefined;
+  if (cachedJwtConfig) return cachedJwtConfig;
+
+  const response = await secretsClient.send(
+    new GetSecretValueCommand({ SecretId: secretId })
+  );
+
+  if (!response?.SecretString) {
+    throw new Error('BOX_JWT_SECRET_ARN returned empty SecretString');
+  }
+
+  cachedJwtConfig = JwtConfig.fromConfigJsonString(response.SecretString);
+  return cachedJwtConfig;
+}
+
+async function buildJwtConfig() {
+  const secretConfig = await loadJwtConfigFromSecret();
+  if (secretConfig) return secretConfig;
+
   const configFile = process.env.BOX_CONFIG_FILE;
   if (configFile) {
     const fileContent = readFileSync(configFile, 'utf8');
@@ -63,10 +86,10 @@ function buildJwtConfig() {
   });
 }
 
-function getClient() {
+async function getClient() {
   if (cachedClient) return cachedClient;
 
-  const jwtAuth = new BoxJwtAuth({ config: buildJwtConfig() });
+  const jwtAuth = new BoxJwtAuth({ config: await buildJwtConfig() });
   const asUserId = process.env.BOX_AS_USER_ID;
   const auth = asUserId ? jwtAuth.withUserSubject(asUserId) : jwtAuth;
 
@@ -91,7 +114,7 @@ export async function handler(event = {}) {
     const params = { limit, offset };
     if (fields?.length) params.fields = fields;
 
-    const client = getClient();
+    const client = await getClient();
     const result = await client.folders.getFolderItems(folderId, params);
 
     return {

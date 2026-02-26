@@ -7,6 +7,7 @@ s3_prefix = "lamba-box-node-sdk"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
 image_repositories = []
+parameter_overrides = "BoxJwtSecretArn=\"arn:aws:secretsmanager:us-east-1:996472359368:secret:box/jwt/config-TeOeDL\""
 
 [default.global.parameters]
 region = "us-east-1"

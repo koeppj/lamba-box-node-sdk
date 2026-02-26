@@ -1,6 +1,6 @@
 # lambda-box-node-sdk
 
-AWS Lambda shell project for JavaScript ESM on Node 20 with one function, `get-box-files`, calling Box folder items via `box-node-sdk@^10` and JWT auth.
+AWS Lambda shell project for JavaScript ESM on Node 22 with one function, `get-box-files`, calling Box folder items via `box-node-sdk@^10` and JWT auth.
 
 ## Included
 
@@ -20,6 +20,7 @@ AWS Lambda shell project for JavaScript ESM on Node 20 with one function, `get-b
 
 Use one auth input approach:
 
+1. `BOX_JWT_SECRET_ARN` (recommended for AWS). Runtime fetch from AWS Secrets Manager.
 1. `BOX_CONFIG_FILE` path to full Box JWT config JSON file (recommended for local dev)
 2. `BOX_JWT_CONFIG_JSON`
 3. `BOX_JWT_CONFIG_JSON_BASE64`
@@ -31,6 +32,33 @@ Optional:
 
 - `BOX_AS_USER_ID` for as-user behavior
 - `BOX_FOLDER_ID` default folder if not passed
+
+## Create the Secrets Manager secret (recommended)
+
+Store the full Box JWT config JSON (same shape as `config/box-jwt.json`) as the secret string.
+
+AWS CLI:
+
+```bash
+aws secretsmanager create-secret \
+  --name box/jwt/config \
+  --secret-string file://path/to/box-jwt.json
+```
+
+Console (quick steps):
+
+1. Secrets Manager → Store a new secret
+2. Secret type: Other type of secret
+3. Plaintext: paste the JSON config
+4. Name: `box/jwt/config`
+5. Create
+
+Then deploy with the secret ARN or name:
+
+```bash
+sam deploy --guided \
+  --parameter-overrides BoxJwtSecretArn=box/jwt/config
+```
 
 ## Local usage
 

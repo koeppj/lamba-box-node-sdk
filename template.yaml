@@ -10,6 +10,15 @@ Globals:
     Architectures:
       - x86_64
 
+Parameters:
+  BoxJwtSecretArn:
+    Type: String
+    Default: ''
+    Description: ARN or name of the Secrets Manager secret containing the Box JWT config JSON.
+
+Conditions:
+  HasBoxJwtSecretArn: !Not [!Equals [!Ref BoxJwtSecretArn, '']]
+
 Resources:
   GetBoxFilesFunction:
     Type: AWS::Serverless::Function
@@ -17,6 +26,15 @@ Resources:
       FunctionName: get-box-files
       CodeUri: .
       Handler: src/get-box-files.handler
+      Policies:
+        - !If
+          - HasBoxJwtSecretArn
+          - Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: !Ref BoxJwtSecretArn
+          - !Ref AWS::NoValue
       Events:
         GetBoxFilesApi:
           Type: Api
@@ -25,6 +43,7 @@ Resources:
             Method: get
       Environment:
         Variables:
+          BOX_JWT_SECRET_ARN: !If [HasBoxJwtSecretArn, !Ref BoxJwtSecretArn, !Ref AWS::NoValue]
           BOX_CONFIG_FILE: ''
           BOX_FOLDER_ID: '0'
           BOX_JWT_CONFIG_JSON: ''
