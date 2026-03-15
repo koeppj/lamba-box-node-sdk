@@ -3,14 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "AWS Lambda Node 22 ESM shell for Box folder listing with box-node-sdk v10 JWT auth",
+  "description": "AWS Lambda Node 22 ESM shell for Box folder and enterprise user listing with box-node-sdk v10 JWT auth",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
     "build": "sam build",
-    "invoke:local": "sam local invoke GetBoxFilesFunction -e events/get-box-files.json",
-    "start:api": "sam local start-api",
+    "invoke:local": "sam local invoke --template template.yaml GetBoxFilesFunction -e events/get-box-files.json",
+    "invoke:local:users": "sam local invoke --template template.yaml BoxListUsersFunction -e events/box-list-users.json",
+    "start:api": "sam local start-api --template template.yaml",
     "test": "node --test"
   },
   "dependencies": {

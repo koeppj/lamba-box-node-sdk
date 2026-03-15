@@ -1,19 +1,29 @@
 # lambda-box-node-sdk
 
-AWS Lambda shell project for JavaScript ESM on Node 22 with one function, `get-box-files`, calling Box folder items via `box-node-sdk@^10` and JWT auth.
+AWS Lambda shell project for JavaScript ESM on Node 22 with two functions:
+
+- `get-box-files` for Box folder items
+- `box-list-users` for Box enterprise users
 
 ## Included
 
-- Node runtime: `nodejs20.x`
+- Node runtime: `nodejs22.x`
 - Module format: ESM (`"type": "module"`)
-- Function: `get-box-files`
-- Box API call: `client.folders.getFolderItems(folderId, params)`
+- Functions:
+  - `get-box-files`
+  - `box-list-users`
+- Box API calls:
+  - `client.folders.getFolderItems(folderId, params)`
+  - `client.users.getUsers(params)`
 
 ## Project files
 
 - `template.yaml` SAM template
-- `src/get-box-files.mjs` Lambda handler
+- `src/box-client.mjs` shared Box JWT/client bootstrap
+- `src/get-box-files.mjs` folder items Lambda handler
+- `src/box-list-users.mjs` enterprise users Lambda handler
 - `events/get-box-files.json` sample invoke payload
+- `events/box-list-users.json` sample invoke payload
 - `.env.example` JWT environment variables
 
 ## Configure JWT auth
@@ -21,12 +31,17 @@ AWS Lambda shell project for JavaScript ESM on Node 22 with one function, `get-b
 Use one auth input approach:
 
 1. `BOX_JWT_SECRET_ARN` (recommended for AWS). Runtime fetch from AWS Secrets Manager.
-1. `BOX_CONFIG_FILE` path to full Box JWT config JSON file (recommended for local dev)
-2. `BOX_JWT_CONFIG_JSON`
-3. `BOX_JWT_CONFIG_JSON_BASE64`
-4. Individual keys (`BOX_CLIENT_ID`, `BOX_CLIENT_SECRET`, `BOX_JWT_KEY_ID`, `BOX_PRIVATE_KEY`, `BOX_PRIVATE_KEY_PASSPHRASE`, and one subject ID)
+2. `BOX_CONFIG_FILE` path to full Box JWT config JSON file (recommended for local dev)
+3. `BOX_JWT_CONFIG_JSON`
+4. `BOX_JWT_CONFIG_JSON_BASE64`
+5. Individual keys (`BOX_CLIENT_ID`, `BOX_CLIENT_SECRET`, `BOX_JWT_KEY_ID`, `BOX_PRIVATE_KEY`, `BOX_PRIVATE_KEY_PASSPHRASE`, and one subject ID)
 
-Note for `sam local`: if you use `BOX_CONFIG_FILE`, the file must exist inside the project `CodeUri` so the runtime container can read it.
+`BOX_CONFIG_FILE` notes:
+
+- Direct local Node execution can use either a relative path like `config/box-jwt.json` or a host absolute path.
+- `sam local` should be run against `template.yaml`, not `.aws-sam/build/template.yaml`, when using a local config file from `config/`.
+- During `sam local`, the handler will remap a host absolute path to the mounted `/var/task/...` path when the file lives under the mounted project tree.
+- A built-artifact invoke still will not see ignored local files unless you copy them into the build artifact yourself.
 
 Optional:
 
@@ -65,15 +80,32 @@ sam deploy --guided \
 ```bash
 npm install
 sam build
-sam local invoke GetBoxFilesFunction -e events/get-box-files.json
-sam local start-api
+sam local invoke --template template.yaml GetBoxFilesFunction -e events/get-box-files.json
+sam local invoke --template template.yaml BoxListUsersFunction -e events/box-list-users.json
+sam local start-api --template template.yaml
 ```
 
-Call local API:
+Call local APIs:
 
 ```bash
 curl "http://127.0.0.1:3000/box/folders/0/items?limit=100&offset=0&fields=id,type,name,size"
 ```
+
+```bash
+curl "http://127.0.0.1:3000/box/users?user_type=managed&filter_term=example"
+```
+
+## Endpoints
+
+`GET /box/folders/{folderId}/items`
+
+- Optional query params: `limit`, `offset`, `fields`
+- Fallback folder lookup order: path `folderId`, query `folderId`, `BOX_FOLDER_ID`, then `0`
+
+`GET /box/users`
+
+- Optional query params: `user_type`, `filter_term`
+- Maps to `client.users.getUsers({ userType, filterTerm })`
 
 ## Deploy
 

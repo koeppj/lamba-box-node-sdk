@@ -1,0 +1,6 @@
+{
+  "queryStringParameters": {
+    "user_type": "managed",
+    "filter_term": "example"
+  }
+}
