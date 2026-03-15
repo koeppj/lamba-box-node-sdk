@@ -171,6 +171,25 @@ curl "http://127.0.0.1:3000/box/files/12345/metadata/submission-date/delete"
 - Returns `404` when the template or field is missing
 - Returns `204` on success
 
+## Live demo
+
+The current deployed demo is available at the following API Gateway endpoints in `us-east-1`.
+Replace `{folderId}` or `{fileId}` with a real Box folder or file ID before calling the route.
+
+Live demo IDs:
+
+- Folder ID: `371193025285`
+- File ID: `2165662182070`
+
+```text
+https://oifxqgqsx8.execute-api.us-east-1.amazonaws.com/Prod/box/folders/{folderId}/items
+https://oifxqgqsx8.execute-api.us-east-1.amazonaws.com/Prod/box/users
+https://oifxqgqsx8.execute-api.us-east-1.amazonaws.com/Prod/box/files/{fileId}/metadata/submission-date
+https://oifxqgqsx8.execute-api.us-east-1.amazonaws.com/Prod/box/files/{fileId}/metadata/submission-date/set
+https://oifxqgqsx8.execute-api.us-east-1.amazonaws.com/Prod/box/files/{fileId}/metadata/properties/delete
+https://oifxqgqsx8.execute-api.us-east-1.amazonaws.com/Prod/box/files/{fileId}/metadata/submission-date/delete
+```
+
 ## Deploy
 
 ```bash
