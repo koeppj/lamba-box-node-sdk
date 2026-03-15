@@ -1,9 +1,13 @@
 # lambda-box-node-sdk
 
-AWS Lambda shell project for JavaScript ESM on Node 22 with two functions:
+AWS Lambda shell project for JavaScript ESM on Node 22 with six functions:
 
 - `get-box-files` for Box folder items
 - `box-list-users` for Box enterprise users
+- `get-submission-date` for reading `global.properties.submissionDate`
+- `set-submission-date` for creating or updating `global.properties.submissionDate`
+- `delete-properties-template` for deleting the `global.properties` metadata template
+- `delete-submission-date` for removing only `global.properties.submissionDate`
 
 ## Included
 
@@ -12,9 +16,17 @@ AWS Lambda shell project for JavaScript ESM on Node 22 with two functions:
 - Functions:
   - `get-box-files`
   - `box-list-users`
+  - `get-submission-date`
+  - `set-submission-date`
+  - `delete-properties-template`
+  - `delete-submission-date`
 - Box API calls:
   - `client.folders.getFolderItems(folderId, params)`
   - `client.users.getUsers(params)`
+  - `client.fileMetadata.getFileMetadataById(fileId, 'global', 'properties')`
+  - `client.fileMetadata.createFileMetadataById(fileId, 'global', 'properties', body)`
+  - `client.fileMetadata.updateFileMetadataById(fileId, 'global', 'properties', patch)`
+  - `client.fileMetadata.deleteFileMetadataById(fileId, 'global', 'properties')`
 
 ## Project files
 
@@ -22,8 +34,17 @@ AWS Lambda shell project for JavaScript ESM on Node 22 with two functions:
 - `src/box-client.mjs` shared Box JWT/client bootstrap
 - `src/get-box-files.mjs` folder items Lambda handler
 - `src/box-list-users.mjs` enterprise users Lambda handler
+- `src/submission-date-common.mjs` shared metadata helper for submission date functions
+- `src/get-submission-date.mjs` get metadata handler
+- `src/set-submission-date.mjs` create or update metadata handler
+- `src/delete-properties-template.mjs` delete template handler
+- `src/delete-submission-date.mjs` delete property handler
 - `events/get-box-files.json` sample invoke payload
 - `events/box-list-users.json` sample invoke payload
+- `events/get-submission-date.json` sample invoke payload
+- `events/set-submission-date.json` sample invoke payload
+- `events/delete-properties-template.json` sample invoke payload
+- `events/delete-submission-date.json` sample invoke payload
 - `.env.example` JWT environment variables
 
 ## Configure JWT auth
@@ -47,6 +68,7 @@ Optional:
 
 - `BOX_AS_USER_ID` for as-user behavior
 - `BOX_FOLDER_ID` default folder if not passed
+- `BOX_TEST_FILE_ID` default file for the submission date handlers if not passed
 
 ## Create the Secrets Manager secret (recommended)
 
@@ -82,6 +104,10 @@ npm install
 sam build
 sam local invoke --template template.yaml GetBoxFilesFunction -e events/get-box-files.json
 sam local invoke --template template.yaml BoxListUsersFunction -e events/box-list-users.json
+sam local invoke --template template.yaml GetSubmissionDateFunction -e events/get-submission-date.json
+sam local invoke --template template.yaml SetSubmissionDateFunction -e events/set-submission-date.json
+sam local invoke --template template.yaml DeletePropertiesTemplateFunction -e events/delete-properties-template.json
+sam local invoke --template template.yaml DeleteSubmissionDateFunction -e events/delete-submission-date.json
 sam local start-api --template template.yaml
 ```
 
@@ -95,6 +121,22 @@ curl "http://127.0.0.1:3000/box/folders/0/items?limit=100&offset=0&fields=id,typ
 curl "http://127.0.0.1:3000/box/users?user_type=managed&filter_term=example"
 ```
 
+```bash
+curl "http://127.0.0.1:3000/box/files/12345/metadata/submission-date"
+```
+
+```bash
+curl "http://127.0.0.1:3000/box/files/12345/metadata/submission-date/set"
+```
+
+```bash
+curl "http://127.0.0.1:3000/box/files/12345/metadata/properties/delete"
+```
+
+```bash
+curl "http://127.0.0.1:3000/box/files/12345/metadata/submission-date/delete"
+```
+
 ## Endpoints
 
 `GET /box/folders/{folderId}/items`
@@ -106,6 +148,28 @@ curl "http://127.0.0.1:3000/box/users?user_type=managed&filter_term=example"
 
 - Optional query params: `user_type`, `filter_term`
 - Maps to `client.users.getUsers({ userType, filterTerm })`
+
+`GET /box/files/{fileId}/metadata/submission-date`
+
+- Returns the full `global.properties` metadata object when `submissionDate` is present
+- Returns `404` when the properties template or `submissionDate` value is missing
+
+`GET /box/files/{fileId}/metadata/submission-date/set`
+
+- Uses the current UTC timestamp in RFC 3339 / ISO 8601 format
+- Creates the `global.properties` template if missing
+- Adds or replaces `submissionDate` when the template already exists
+
+`GET /box/files/{fileId}/metadata/properties/delete`
+
+- Deletes the `global.properties` metadata template
+- Returns `204` on success
+
+`GET /box/files/{fileId}/metadata/submission-date/delete`
+
+- Removes only `submissionDate` from `global.properties`
+- Returns `404` when the template or field is missing
+- Returns `204` on success
 
 ## Deploy
 

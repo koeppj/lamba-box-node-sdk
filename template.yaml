@@ -56,6 +56,7 @@ Resources:
           BOX_ENTERPRISE_ID: ''
           BOX_USER_ID: ''
           BOX_AS_USER_ID: ''
+          BOX_TEST_FILE_ID: ''
 
   BoxListUsersFunction:
     Type: AWS::Serverless::Function
@@ -92,6 +93,155 @@ Resources:
           BOX_ENTERPRISE_ID: ''
           BOX_USER_ID: ''
           BOX_AS_USER_ID: ''
+          BOX_TEST_FILE_ID: ''
+
+  GetSubmissionDateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: get-submission-date
+      CodeUri: .
+      Handler: src/get-submission-date.handler
+      Policies:
+        - !If
+          - HasBoxJwtSecretArn
+          - Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: !Ref BoxJwtSecretArn
+          - !Ref AWS::NoValue
+      Events:
+        GetSubmissionDateApi:
+          Type: Api
+          Properties:
+            Path: /box/files/{fileId}/metadata/submission-date
+            Method: get
+      Environment:
+        Variables:
+          BOX_JWT_SECRET_ARN: !If [HasBoxJwtSecretArn, !Ref BoxJwtSecretArn, !Ref AWS::NoValue]
+          BOX_CONFIG_FILE: ''
+          BOX_JWT_CONFIG_JSON: ''
+          BOX_JWT_CONFIG_JSON_BASE64: ''
+          BOX_CLIENT_ID: ''
+          BOX_CLIENT_SECRET: ''
+          BOX_JWT_KEY_ID: ''
+          BOX_PRIVATE_KEY: ''
+          BOX_PRIVATE_KEY_PASSPHRASE: ''
+          BOX_ENTERPRISE_ID: ''
+          BOX_USER_ID: ''
+          BOX_AS_USER_ID: ''
+          BOX_TEST_FILE_ID: ''
+
+  SetSubmissionDateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: set-submission-date
+      CodeUri: .
+      Handler: src/set-submission-date.handler
+      Policies:
+        - !If
+          - HasBoxJwtSecretArn
+          - Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: !Ref BoxJwtSecretArn
+          - !Ref AWS::NoValue
+      Events:
+        SetSubmissionDateApi:
+          Type: Api
+          Properties:
+            Path: /box/files/{fileId}/metadata/submission-date/set
+            Method: get
+      Environment:
+        Variables:
+          BOX_JWT_SECRET_ARN: !If [HasBoxJwtSecretArn, !Ref BoxJwtSecretArn, !Ref AWS::NoValue]
+          BOX_CONFIG_FILE: ''
+          BOX_JWT_CONFIG_JSON: ''
+          BOX_JWT_CONFIG_JSON_BASE64: ''
+          BOX_CLIENT_ID: ''
+          BOX_CLIENT_SECRET: ''
+          BOX_JWT_KEY_ID: ''
+          BOX_PRIVATE_KEY: ''
+          BOX_PRIVATE_KEY_PASSPHRASE: ''
+          BOX_ENTERPRISE_ID: ''
+          BOX_USER_ID: ''
+          BOX_AS_USER_ID: ''
+          BOX_TEST_FILE_ID: ''
+
+  DeletePropertiesTemplateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: delete-properties-template
+      CodeUri: .
+      Handler: src/delete-properties-template.handler
+      Policies:
+        - !If
+          - HasBoxJwtSecretArn
+          - Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: !Ref BoxJwtSecretArn
+          - !Ref AWS::NoValue
+      Events:
+        DeletePropertiesTemplateApi:
+          Type: Api
+          Properties:
+            Path: /box/files/{fileId}/metadata/properties/delete
+            Method: get
+      Environment:
+        Variables:
+          BOX_JWT_SECRET_ARN: !If [HasBoxJwtSecretArn, !Ref BoxJwtSecretArn, !Ref AWS::NoValue]
+          BOX_CONFIG_FILE: ''
+          BOX_JWT_CONFIG_JSON: ''
+          BOX_JWT_CONFIG_JSON_BASE64: ''
+          BOX_CLIENT_ID: ''
+          BOX_CLIENT_SECRET: ''
+          BOX_JWT_KEY_ID: ''
+          BOX_PRIVATE_KEY: ''
+          BOX_PRIVATE_KEY_PASSPHRASE: ''
+          BOX_ENTERPRISE_ID: ''
+          BOX_USER_ID: ''
+          BOX_AS_USER_ID: ''
+          BOX_TEST_FILE_ID: ''
+
+  DeleteSubmissionDateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: delete-submission-date
+      CodeUri: .
+      Handler: src/delete-submission-date.handler
+      Policies:
+        - !If
+          - HasBoxJwtSecretArn
+          - Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: !Ref BoxJwtSecretArn
+          - !Ref AWS::NoValue
+      Events:
+        DeleteSubmissionDateApi:
+          Type: Api
+          Properties:
+            Path: /box/files/{fileId}/metadata/submission-date/delete
+            Method: get
+      Environment:
+        Variables:
+          BOX_JWT_SECRET_ARN: !If [HasBoxJwtSecretArn, !Ref BoxJwtSecretArn, !Ref AWS::NoValue]
+          BOX_CONFIG_FILE: ''
+          BOX_JWT_CONFIG_JSON: ''
+          BOX_JWT_CONFIG_JSON_BASE64: ''
+          BOX_CLIENT_ID: ''
+          BOX_CLIENT_SECRET: ''
+          BOX_JWT_KEY_ID: ''
+          BOX_PRIVATE_KEY: ''
+          BOX_PRIVATE_KEY_PASSPHRASE: ''
+          BOX_ENTERPRISE_ID: ''
+          BOX_USER_ID: ''
+          BOX_AS_USER_ID: ''
+          BOX_TEST_FILE_ID: ''
 
 Outputs:
   GetBoxFilesApiUrl:
@@ -100,3 +250,15 @@ Outputs:
   BoxListUsersApiUrl:
     Description: Enterprise users API endpoint
     Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/box/users'
+  GetSubmissionDateApiUrl:
+    Description: Submission date metadata read endpoint
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/box/files/{fileId}/metadata/submission-date'
+  SetSubmissionDateApiUrl:
+    Description: Submission date metadata set endpoint
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/box/files/{fileId}/metadata/submission-date/set'
+  DeletePropertiesTemplateApiUrl:
+    Description: Properties metadata delete endpoint
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/box/files/{fileId}/metadata/properties/delete'
+  DeleteSubmissionDateApiUrl:
+    Description: Submission date metadata delete endpoint
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/box/files/{fileId}/metadata/submission-date/delete'
