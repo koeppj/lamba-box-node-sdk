@@ -95,6 +95,43 @@ Resources:
           BOX_AS_USER_ID: ''
           BOX_TEST_FILE_ID: ''
 
+  FindBoxFolderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: find-box-folder
+      CodeUri: .
+      Handler: src/find-box-folder.handler
+      Policies:
+        - !If
+          - HasBoxJwtSecretArn
+          - Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: !Ref BoxJwtSecretArn
+          - !Ref AWS::NoValue
+      Events:
+        FindBoxFolderApi:
+          Type: Api
+          Properties:
+            Path: /box/folders/find
+            Method: get
+      Environment:
+        Variables:
+          BOX_JWT_SECRET_ARN: !If [HasBoxJwtSecretArn, !Ref BoxJwtSecretArn, !Ref AWS::NoValue]
+          BOX_CONFIG_FILE: ''
+          BOX_JWT_CONFIG_JSON: ''
+          BOX_JWT_CONFIG_JSON_BASE64: ''
+          BOX_CLIENT_ID: ''
+          BOX_CLIENT_SECRET: ''
+          BOX_JWT_KEY_ID: ''
+          BOX_PRIVATE_KEY: ''
+          BOX_PRIVATE_KEY_PASSPHRASE: ''
+          BOX_ENTERPRISE_ID: ''
+          BOX_USER_ID: ''
+          BOX_AS_USER_ID: ''
+          BOX_TEST_FILE_ID: ''
+
   GetSubmissionDateFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -250,6 +287,9 @@ Outputs:
   BoxListUsersApiUrl:
     Description: Enterprise users API endpoint
     Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/box/users'
+  FindBoxFolderApiUrl:
+    Description: Folder search API endpoint
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/box/folders/find'
   GetSubmissionDateApiUrl:
     Description: Submission date metadata read endpoint
     Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/box/files/{fileId}/metadata/submission-date'

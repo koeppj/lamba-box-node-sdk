@@ -1,9 +1,10 @@
 # lambda-box-node-sdk
 
-AWS Lambda shell project for JavaScript ESM on Node 22 with six functions:
+AWS Lambda shell project for JavaScript ESM on Node 22 with seven functions:
 
 - `get-box-files` for Box folder items
 - `box-list-users` for Box enterprise users
+- `find-box-folder` for folder search by name
 - `get-submission-date` for reading `global.properties.submissionDate`
 - `set-submission-date` for creating or updating `global.properties.submissionDate`
 - `delete-properties-template` for deleting the `global.properties` metadata template
@@ -16,6 +17,7 @@ AWS Lambda shell project for JavaScript ESM on Node 22 with six functions:
 - Functions:
   - `get-box-files`
   - `box-list-users`
+  - `find-box-folder`
   - `get-submission-date`
   - `set-submission-date`
   - `delete-properties-template`
@@ -23,6 +25,7 @@ AWS Lambda shell project for JavaScript ESM on Node 22 with six functions:
 - Box API calls:
   - `client.folders.getFolderItems(folderId, params)`
   - `client.users.getUsers(params)`
+  - `client.search.searchForContent(params)`
   - `client.fileMetadata.getFileMetadataById(fileId, 'global', 'properties')`
   - `client.fileMetadata.createFileMetadataById(fileId, 'global', 'properties', body)`
   - `client.fileMetadata.updateFileMetadataById(fileId, 'global', 'properties', patch)`
@@ -34,6 +37,7 @@ AWS Lambda shell project for JavaScript ESM on Node 22 with six functions:
 - `src/box-client.mjs` shared Box JWT/client bootstrap
 - `src/get-box-files.mjs` folder items Lambda handler
 - `src/box-list-users.mjs` enterprise users Lambda handler
+- `src/find-box-folder.mjs` folder search Lambda handler
 - `src/submission-date-common.mjs` shared metadata helper for submission date functions
 - `src/get-submission-date.mjs` get metadata handler
 - `src/set-submission-date.mjs` create or update metadata handler
@@ -41,6 +45,7 @@ AWS Lambda shell project for JavaScript ESM on Node 22 with six functions:
 - `src/delete-submission-date.mjs` delete property handler
 - `events/get-box-files.json` sample invoke payload
 - `events/box-list-users.json` sample invoke payload
+- `events/find-box-folder.json` sample invoke payload
 - `events/get-submission-date.json` sample invoke payload
 - `events/set-submission-date.json` sample invoke payload
 - `events/delete-properties-template.json` sample invoke payload
@@ -104,6 +109,7 @@ npm install
 sam build
 sam local invoke --template template.yaml GetBoxFilesFunction -e events/get-box-files.json
 sam local invoke --template template.yaml BoxListUsersFunction -e events/box-list-users.json
+sam local invoke --template template.yaml FindBoxFolderFunction -e events/find-box-folder.json
 sam local invoke --template template.yaml GetSubmissionDateFunction -e events/get-submission-date.json
 sam local invoke --template template.yaml SetSubmissionDateFunction -e events/set-submission-date.json
 sam local invoke --template template.yaml DeletePropertiesTemplateFunction -e events/delete-properties-template.json
@@ -119,6 +125,10 @@ curl "http://127.0.0.1:3000/box/folders/0/items?limit=100&offset=0&fields=id,typ
 
 ```bash
 curl "http://127.0.0.1:3000/box/users?user_type=managed&filter_term=example"
+```
+
+```bash
+curl "http://127.0.0.1:3000/box/folders/find?name=example&mode=exact"
 ```
 
 ```bash
@@ -148,6 +158,14 @@ curl "http://127.0.0.1:3000/box/files/12345/metadata/submission-date/delete"
 
 - Optional query params: `user_type`, `filter_term`
 - Maps to `client.users.getUsers({ userType, filterTerm })`
+
+`GET /box/folders/find`
+
+- Required query param: `name`
+- Optional query param: `mode`, either `native` or `exact`; defaults to `native`
+- Maps to `client.search.searchForContent({ query: "\"<name>\"", contentTypes: ["name"], type: "folder" })`
+- Returns the Box search `entries` array
+- In `exact` mode, filters entries where `entry.name === name`
 
 `GET /box/files/{fileId}/metadata/submission-date`
 
@@ -188,6 +206,7 @@ https://oifxqgqsx8.execute-api.us-east-1.amazonaws.com/Prod/box/files/{fileId}/m
 https://oifxqgqsx8.execute-api.us-east-1.amazonaws.com/Prod/box/files/{fileId}/metadata/submission-date/set
 https://oifxqgqsx8.execute-api.us-east-1.amazonaws.com/Prod/box/files/{fileId}/metadata/properties/delete
 https://oifxqgqsx8.execute-api.us-east-1.amazonaws.com/Prod/box/files/{fileId}/metadata/submission-date/delete
+https://oifxqgqsx8.execute-api.us-east-1.amazonaws.com/Prod/box/folders/find  
 ```
 
 ## Deploy

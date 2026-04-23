@@ -11,6 +11,7 @@
     "build": "sam build",
     "invoke:local": "sam local invoke --template template.yaml GetBoxFilesFunction -e events/get-box-files.json",
     "invoke:local:users": "sam local invoke --template template.yaml BoxListUsersFunction -e events/box-list-users.json",
+    "invoke:local:find-folder": "sam local invoke --template template.yaml FindBoxFolderFunction -e events/find-box-folder.json",
     "invoke:local:get-submission-date": "sam local invoke --template template.yaml GetSubmissionDateFunction -e events/get-submission-date.json",
     "invoke:local:set-submission-date": "sam local invoke --template template.yaml SetSubmissionDateFunction -e events/set-submission-date.json",
     "invoke:local:delete-properties-template": "sam local invoke --template template.yaml DeletePropertiesTemplateFunction -e events/delete-properties-template.json",
